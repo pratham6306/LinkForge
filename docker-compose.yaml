@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16
-    container_name: url_shortener_db
+    container_name: linkforge_db
     restart: unless-stopped
     environment:
       POSTGRES_DB: url_shortener
@@ -11,6 +11,41 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d url_shortener"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: pratham6306/linkforge-backend:latest
+    container_name: linkforge_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/url_shortener
+      SECRET_KEY: secret-key-for-jwt-authentication-url-shortener-2026
+      BASE_URL: http://localhost:8000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://localhost:80,http://127.0.0.1:3000,http://127.0.0.1:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: pratham6306/linkforge-frontend:latest
+    container_name: linkforge_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
