@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+import os
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,21 +12,39 @@ from app.models import User
 router = APIRouter()
 
 
+def get_request_base_url(request: Request) -> str:
+    configured = os.getenv("BASE_URL")
+    if configured and configured.strip() and configured != "http://localhost:8000":
+        return configured.rstrip("/")
+
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+
+    if host:
+        return f"{proto}://{host}".rstrip("/")
+
+    return "http://localhost:8000"
+
+
 @router.post("/api/v1/urls", response_model=URLResponse)
 async def create_short_url(
     data: URLCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await url_service.create_short_url(db, data, user_id=current_user.id)
+    base_url = get_request_base_url(request)
+    return await url_service.create_short_url(db, data, user_id=current_user.id, base_url=base_url)
 
 
 @router.get("/api/v1/urls/my-urls", response_model=list[URLResponse])
 async def get_my_urls(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await url_service.get_user_url_history(db, user_id=current_user.id)
+    base_url = get_request_base_url(request)
+    return await url_service.get_user_url_history(db, user_id=current_user.id, base_url=base_url)
 
 
 @router.get("/{short_code}")
