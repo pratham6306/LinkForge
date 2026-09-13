@@ -19,9 +19,14 @@ elif raw_db_url.startswith("postgresql://") and not raw_db_url.startswith("postg
 else:
     DATABASE_URL = raw_db_url
 
+connect_args = {}
+if "dpg-" in DATABASE_URL and "sslmode=require" not in DATABASE_URL:
+    connect_args["ssl"] = False
+
 engine = create_async_engine(
     DATABASE_URL,
     echo=True,
+    connect_args=connect_args,
 )
 
 AsyncSessionLocal = async_sessionmaker(

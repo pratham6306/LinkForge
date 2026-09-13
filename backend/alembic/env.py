@@ -50,10 +50,15 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     """Run migrations using an async database connection."""
+    connect_args = {}
+    if DATABASE_URL and "dpg-" in DATABASE_URL and "sslmode=require" not in DATABASE_URL:
+        connect_args["ssl"] = False
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:
