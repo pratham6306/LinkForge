@@ -31,14 +31,15 @@ class AuthService:
         email: str,
         password: str,
     ) -> User:
-        existing_user = await UserRepository.get_by_email(db, email)
+        clean_email = email.strip().lower()
+        existing_user = await UserRepository.get_by_email(db, clean_email)
         if existing_user is not None:
             raise ValueError("Email already registered")
 
         hashed_password = password_hash.hash(password)
         return await UserRepository.create(
             db=db,
-            email=email,
+            email=clean_email,
             password_hash=hashed_password,
         )
 
@@ -48,7 +49,8 @@ class AuthService:
         email: str,
         password: str,
     ) -> User | None:
-        user = await UserRepository.get_by_email(db, email)
+        clean_email = email.strip().lower()
+        user = await UserRepository.get_by_email(db, clean_email)
         if not user:
             return None
         if not password_hash.verify(password, user.password_hash):
