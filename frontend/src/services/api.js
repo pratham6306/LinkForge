@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://lb.onrender.com");
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "https://linkforge-backend-q6n1.onrender.com");
 
 async function handleResponse(response, defaultErrorMsg) {
   const text = await response.text();

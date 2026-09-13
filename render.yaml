@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: lb
+    name: linkforge-backend
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
