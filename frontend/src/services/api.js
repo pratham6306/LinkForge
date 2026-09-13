@@ -1,5 +1,23 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "");
 
+async function handleResponse(response, defaultErrorMsg) {
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    if (!response.ok) {
+      throw new Error(`Server returned error (${response.status}): ${response.statusText || "Backend waking up / unavailable"}`);
+    }
+    throw new Error("Invalid response format received from server");
+  }
+
+  if (!response.ok) {
+    throw new Error(data.detail || defaultErrorMsg);
+  }
+  return data;
+}
+
 export async function registerUser(email, password) {
   const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
     method: "POST",
@@ -7,11 +25,7 @@ export async function registerUser(email, password) {
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || "Registration failed");
-  }
-  return data;
+  return await handleResponse(response, "Registration failed");
 }
 
 export async function loginUser(email, password) {
@@ -21,10 +35,7 @@ export async function loginUser(email, password) {
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || "Login failed");
-  }
+  const data = await handleResponse(response, "Login failed");
   return data.access_token;
 }
 
@@ -43,11 +54,7 @@ export async function createShortUrl(token, originalUrl, expiresAt = null) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || "Failed to create short URL");
-  }
-  return data;
+  return await handleResponse(response, "Failed to create short URL");
 }
 
 export async function fetchMyUrls(token) {
@@ -58,9 +65,5 @@ export async function fetchMyUrls(token) {
     },
   });
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || "Failed to fetch URL history");
-  }
-  return data;
+  return await handleResponse(response, "Failed to fetch URL history");
 }
