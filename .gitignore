@@ -10,11 +10,25 @@ venv/
 .venv/
 env/
 ENV/
+backend/env/
+
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+**/node_modules/
+.npm
+dist/
+**/dist/
+.vite/
+**/ .vite/
 
 # =========================
 # Environment Variables
 # =========================
 .env
+*.env
+**/.env
 .env.*
 !.env.example
 
@@ -41,18 +55,6 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
-
-# =========================
-# Build / Distribution
-# =========================
-build/
-dist/
-*.egg-info/
-
-# =========================
-# Jupyter
-# =========================
-.ipynb_checkpoints/
 
 # =========================
 # Local Database / Data
