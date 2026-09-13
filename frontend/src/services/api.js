@@ -7,7 +7,7 @@ async function handleResponse(response, defaultErrorMsg) {
     data = text ? JSON.parse(text) : {};
   } catch {
     if (!response.ok) {
-      throw new Error(`Server error (${response.status}): ${response.statusText || "Backend waking up / unavailable"}`);
+      throw new Error(`[HTTP ${response.status}] ${response.statusText || "Backend waking up / unavailable"}`);
     }
     throw new Error("Invalid response format received from server");
   }
@@ -19,7 +19,8 @@ async function handleResponse(response, defaultErrorMsg) {
     } else if (typeof errorDetail === "object" && errorDetail !== null) {
       errorDetail = JSON.stringify(errorDetail);
     }
-    throw new Error(errorDetail || defaultErrorMsg);
+    const message = errorDetail || defaultErrorMsg;
+    throw new Error(`[HTTP ${response.status}] ${message}`);
   }
   return data;
 }
