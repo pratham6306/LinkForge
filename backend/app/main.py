@@ -11,27 +11,11 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS Middleware for Frontend Access
-cors_origins_raw = os.getenv("CORS_ORIGINS", "")
-default_origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "https://linkforge-frontend.onrender.com",
-    "https://linkforge-app.onrender.com",
-]
-
-if cors_origins_raw:
-    custom_origins = [o.strip() for o in cors_origins_raw.split(",") if o.strip()]
-    origins = list(set(default_origins + custom_origins))
-else:
-    origins = default_origins
-
+# Configure CORS Middleware for Frontend & External Access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
