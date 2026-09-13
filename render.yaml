@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: api
+    name: linkforge-backend
     env: docker
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
@@ -13,10 +13,10 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: BASE_URL
-        value: https://api.onrender.com
+        value: https://linkforge-backend.onrender.com
 
   - type: web
-    name: app
+    name: linkforge-frontend
     env: docker
     dockerContext: ./frontend
     dockerfilePath: ./frontend/Dockerfile
