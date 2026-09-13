@@ -13,15 +13,16 @@ router = APIRouter()
 
 
 def get_request_base_url(request: Request) -> str:
-    configured = os.getenv("BASE_URL")
-    if configured and configured.strip() and configured != "http://localhost:8000":
-        return configured.rstrip("/")
-
+    # Prioritize dynamic host header from incoming HTTP request (handles Render -si0u suffixes)
     host = request.headers.get("x-forwarded-host") or request.headers.get("host")
     proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
 
     if host:
         return f"{proto}://{host}".rstrip("/")
+
+    configured = os.getenv("BASE_URL")
+    if configured and configured.strip() and configured != "http://localhost:8000":
+        return configured.rstrip("/")
 
     return "http://localhost:8000"
 
