@@ -23,8 +23,16 @@ export default function AuthForm() {
         const token = await loginUser(email, password);
         login(token, email);
       } else {
-        await registerUser(email, password);
-        setSuccessMsg("Account created successfully! Logging you in...");
+        try {
+          await registerUser(email, password);
+          setSuccessMsg("Account created successfully! Logging you in...");
+        } catch (regErr) {
+          if (regErr.message && regErr.message.includes("Email already registered")) {
+            // If already registered, seamlessly log in with provided credentials
+          } else {
+            throw regErr;
+          }
+        }
         const token = await loginUser(email, password);
         login(token, email);
       }
