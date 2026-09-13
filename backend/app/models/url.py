@@ -1,14 +1,23 @@
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+from sqlalchemy import String, Integer, DateTime, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class URL(Base):
     __tablename__ = "urls"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
     original_url: Mapped[str] = mapped_column(String, nullable=False)
     short_code: Mapped[str] = mapped_column(
         String(10),
@@ -30,3 +39,5 @@ class URL(Base):
         DateTime(timezone=True),
         nullable=True,
     )
+
+    user: Mapped["User | None"] = relationship(back_populates="urls")

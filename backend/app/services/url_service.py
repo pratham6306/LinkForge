@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
@@ -13,31 +14,59 @@ class URLService:
         self,
         db: AsyncSession,
         data: URLCreate,
-        base_url: str = "http://127.0.0.1:8000",
+        user_id: int | None = None,
+        base_url: str | None = None,
     ) -> URLResponse:
+        target_base_url = base_url or os.getenv("BASE_URL", "http://localhost:8000")
+
         # Fetch next unique database sequence ID
         next_id = await url_repository.get_next_id(db)
 
         # Generate unique Base62 short code from the ID
         short_code = generate_short_code_from_id(next_id)
 
-        # Save record atomically with optional expiration timestamp
+        # Save record atomically linked to user_id
         url_record = await url_repository.create(
             db=db,
             original_url=str(data.original_url),
             short_code=short_code,
+            user_id=user_id,
             custom_id=next_id,
             expires_at=data.expires_at,
         )
 
         return URLResponse(
             id=url_record.id,
+            user_id=url_record.user_id,
             original_url=url_record.original_url,
             short_code=url_record.short_code,
-            short_url=f"{base_url}/{url_record.short_code}",
+            short_url=f"{target_base_url}/{url_record.short_code}",
+            click_count=url_record.click_count,
             created_at=url_record.created_at,
             expires_at=url_record.expires_at,
         )
+
+    async def get_user_url_history(
+        self,
+        db: AsyncSession,
+        user_id: int,
+        base_url: str | None = None,
+    ) -> list[URLResponse]:
+        target_base_url = base_url or os.getenv("BASE_URL", "http://localhost:8000")
+        urls = await url_repository.get_by_user_id(db, user_id)
+        return [
+            URLResponse(
+                id=u.id,
+                user_id=u.user_id,
+                original_url=u.original_url,
+                short_code=u.short_code,
+                short_url=f"{target_base_url}/{u.short_code}",
+                click_count=u.click_count,
+                created_at=u.created_at,
+                expires_at=u.expires_at,
+            )
+            for u in urls
+        ]
 
     async def get_original_url(self, db: AsyncSession, short_code: str) -> URL:
         url_record = await url_repository.get_by_short_code(db, short_code)

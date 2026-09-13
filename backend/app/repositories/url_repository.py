@@ -11,6 +11,11 @@ class URLRepository:
         result = await db.execute(query)
         return result.scalar_one_or_none()
 
+    async def get_by_user_id(self, db: AsyncSession, user_id: int) -> list[URL]:
+        query = select(URL).where(URL.user_id == user_id).order_by(URL.created_at.desc())
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
     async def get_next_id(self, db: AsyncSession) -> int:
         """Fetches the next unique integer ID using the PostgreSQL sequence or max ID fallback."""
         try:
@@ -27,11 +32,13 @@ class URLRepository:
         db: AsyncSession,
         original_url: str,
         short_code: str,
+        user_id: int | None = None,
         custom_id: int | None = None,
         expires_at: datetime | None = None,
     ) -> URL:
         url = URL(
             id=custom_id,
+            user_id=user_id,
             original_url=original_url,
             short_code=short_code,
             expires_at=expires_at,
