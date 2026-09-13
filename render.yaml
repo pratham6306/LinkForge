@@ -16,7 +16,7 @@ services:
         value: https://linkforge-backend.onrender.com
 
   - type: web
-    name: linkforge-frontend
+    name: linkforge-ui
     env: docker
     dockerContext: ./frontend
     dockerfilePath: ./frontend/Dockerfile
