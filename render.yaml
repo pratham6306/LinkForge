@@ -26,4 +26,4 @@ databases:
   - name: linkforge-db
     plan: free
     databaseName: url_shortener
-    user: postgres
+    user: url_shortener_user
