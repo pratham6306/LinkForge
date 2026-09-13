@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "http://localhost:8000" : "");
 
 async function handleResponse(response, defaultErrorMsg) {
   const text = await response.text();
@@ -7,13 +7,19 @@ async function handleResponse(response, defaultErrorMsg) {
     data = text ? JSON.parse(text) : {};
   } catch {
     if (!response.ok) {
-      throw new Error(`Server returned error (${response.status}): ${response.statusText || "Backend waking up / unavailable"}`);
+      throw new Error(`Server error (${response.status}): ${response.statusText || "Backend waking up / unavailable"}`);
     }
     throw new Error("Invalid response format received from server");
   }
 
   if (!response.ok) {
-    throw new Error(data.detail || defaultErrorMsg);
+    let errorDetail = data.detail;
+    if (Array.isArray(errorDetail)) {
+      errorDetail = errorDetail.map((err) => err.msg || JSON.stringify(err)).join(", ");
+    } else if (typeof errorDetail === "object" && errorDetail !== null) {
+      errorDetail = JSON.stringify(errorDetail);
+    }
+    throw new Error(errorDetail || defaultErrorMsg);
   }
   return data;
 }
