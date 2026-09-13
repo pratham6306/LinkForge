@@ -17,10 +17,12 @@ services:
 
   - type: web
     name: linkforge-frontend
-    env: docker
-    dockerContext: ./frontend
-    dockerfilePath: ./frontend/Dockerfile
-    plan: free
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://linkforge-backend.onrender.com
 
 databases:
   - name: linkforge-db
