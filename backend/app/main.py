@@ -6,8 +6,8 @@ from app.api.urls import router as urls_router
 from app.api.auth import router as auth_router
 
 app = FastAPI(
-    title="URL Shortener API",
-    description="A URL shortening service built with FastAPI and PostgreSQL",
+    title="LinkForge API",
+    description="A high-performance URL shortening and link analytics service built with FastAPI and PostgreSQL",
     version="1.0.0",
 )
 
@@ -30,5 +30,5 @@ app.include_router(urls_router)
 @app.get("/")
 async def home():
     return {
-        "message": "URL Shortener API is running"
+        "message": "LinkForge API is running"
     }
